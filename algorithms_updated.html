@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Algorithms and Data Structures - Michael Langille CS 499 ePortfolio">
+  <title>Algorithms and Data Structures | Michael Langille</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      
+<nav class="nav" aria-label="Main navigation">
+  <a class="brand" href="index.html">Michael Langille | CS 499</a>
+  <div class="nav-links">
+    <a href="self-assessment.html">Self-Assessment</a>
+    <a href="code-review.html">Code Review</a>
+    <a href="software-design.html">Software Design</a>
+    <a href="algorithms.html">Algorithms</a>
+    <a href="databases.html">Databases</a>
+  </div>
+</nav>
+
+      <p class="kicker">Enhancement Two</p>
+      <h1>Algorithms and Data Structures</h1>
+    </div>
+  </header>
+  <main class="content">
+    <div class="container">
+      
+<p class="lead">
+  For Milestone Three, I continued enhancing the CS 340
+  <code>AnimalShelter</code> artifact by adding purposeful algorithms and
+  data structures for sorting, searching, indexing, and analysis. This
+  enhancement builds on the Software Design and Engineering version rather
+  than replacing it.
+</p>
+
+<div class="artifact-actions">
+  <a class="artifact-button primary-action"
+     href="artifacts/enhanced/README.md">
+     View Enhanced Artifact Files
+  </a>
+  <a class="artifact-button secondary-action"
+     href="artifacts/original/Original_AnimalShelter.py">
+     View Original_AnimalShelter.py
+  </a>
+</div>
+
+<h2>Enhancement Overview</h2>
+<p>
+  The original artifact could retrieve MongoDB records, but it did not
+  demonstrate custom algorithms or purposeful in-memory data structures.
+  The Milestone Three enhancement added a non-mutating merge sort, binary
+  search, a dictionary-based lookup index, frequency counting, and a
+  <code>read_sorted()</code> workflow that connects MongoDB query results
+  to the custom sorting logic.
+</p>
+
+<div class="enhancement-grid">
+  <div class="mini-card"><strong>Merge Sort</strong><br>Predictable O(n log n) sorting without changing the original record order.</div>
+  <div class="mini-card"><strong>Binary Search</strong><br>O(log n) lookup on sorted data, with support for duplicate matches.</div>
+  <div class="mini-card"><strong>Dictionary Index</strong><br>O(n) construction with average O(1) exact-key lookup.</div>
+  <div class="mini-card"><strong>Frequency Counting</strong><br>Single-pass O(n) counting for fields such as animal type or breed.</div>
+</div>
+
+<h2>Key Enhancement: Non-Mutating Merge Sort</h2>
+<p>
+  Merge sort was selected because its best, average, and worst-case running
+  time is O(n log n). The implementation returns a new list instead of
+  rearranging the original list in place, which keeps the MongoDB result
+  order available when it is still needed.
+</p>
+
+<pre class="portfolio-code"><code>def merge_sort(records, field, reverse=False):
+    # Divide the records into smaller lists.
+    # Recursively sort each half.
+    # Merge the halves into a new sorted list.
+    # The original list is not modified.</code></pre>
+
+<div class="complexity-table">
+  <div><strong>Best</strong><span>O(n log n)</span></div>
+  <div><strong>Average</strong><span>O(n log n)</span></div>
+  <div><strong>Worst</strong><span>O(n log n)</span></div>
+  <div><strong>Extra Space</strong><span>O(n)</span></div>
+</div>
+
+<h2>Key Enhancement: Binary Search</h2>
+<p>
+  Binary search repeatedly cuts the search interval in half, making it much
+  more efficient than scanning every record when the data is already sorted.
+  My enhancement also accounts for duplicate values so that a search can
+  return more than one matching animal record.
+</p>
+
+<pre class="portfolio-code"><code>def binary_search(sorted_records, field, target):
+    # Repeatedly narrow the search interval.
+    # When a match is found, collect adjacent
+    # duplicate values before returning results.</code></pre>
+
+<p>
+  The lookup portion of binary search is O(log n), plus the time needed to
+  collect duplicate matches. The trade-off is that the records must first be
+  sorted on the same field being searched.
+</p>
+
+<h2>Key Enhancement: Dictionary-Based Lookup Index</h2>
+<p>
+  A Python dictionary provides a second search strategy for repeated exact
+  matches. The index groups records under a selected key such as
+  <code>animal_type</code> or <code>breed</code>.
+</p>
+
+<pre class="portfolio-code"><code>index = {}
+
+for record in records:
+    key = record.get(field)
+    index.setdefault(key, []).append(record)
+
+matches = index.get(target_value, [])</code></pre>
+
+<p>
+  Building the index requires one pass through the records, or O(n). After
+  the index is built, exact-key lookup is O(1) on average. This uses more
+  memory than a simple scan, but it is useful when the application repeatedly
+  searches the same dataset.
+</p>
+
+<h2>Connecting the Algorithms to MongoDB</h2>
+<p>
+  The <code>read_sorted()</code> enhancement connects the algorithm work to
+  the existing database artifact. Records are retrieved through the CRUD
+  layer and then sorted in memory with the custom merge-sort implementation.
+</p>
+
+<pre class="portfolio-code"><code>records = shelter.read(query)
+
+sorted_records = merge_sort(
+    records,
+    field=sort_field,
+    reverse=descending
+)</code></pre>
+
+<h2>Design Trade-Offs</h2>
+<div class="comparison-grid">
+  <section class="comparison-panel">
+    <h3>Custom In-Memory Processing</h3>
+    <ul>
+      <li>Clearly demonstrates algorithm and data-structure concepts.</li>
+      <li>Works with records already returned by MongoDB.</li>
+      <li>Useful for moderate datasets and repeated local analysis.</li>
+      <li>Requires additional application memory.</li>
+    </ul>
+  </section>
+  <section class="comparison-panel enhanced-panel">
+    <h3>Database-Side Processing</h3>
+    <ul>
+      <li>Often preferable for very large production datasets.</li>
+      <li>Can reduce the amount of data transferred to the application.</li>
+      <li>Can use MongoDB indexes and server-side sort operations.</li>
+      <li>Does not demonstrate custom algorithm implementation as directly.</li>
+    </ul>
+  </section>
+</div>
+
+<h2>Testing</h2>
+<div class="callout">
+  The Algorithms and Data Structures test suite was run in PyCharm with
+  <strong>8 tests passing and exit code 0</strong>. The tests covered normal
+  behavior as well as duplicate, reverse-sort, and no-match cases.
+</div>
+
+<h2>Skills Demonstrated</h2>
+<ul class="portfolio-checks">
+  <li><strong>Algorithm design:</strong> merge sort and binary search were implemented for specific data-processing tasks.</li>
+  <li><strong>Data structures:</strong> dictionaries were used as purposeful lookup indexes and frequency counters.</li>
+  <li><strong>Complexity analysis:</strong> time and space trade-offs were considered rather than choosing an approach only because it worked.</li>
+  <li><strong>Integration:</strong> custom algorithms were connected to records returned through the MongoDB CRUD layer.</li>
+  <li><strong>Testing:</strong> normal, duplicate, reverse-sort, and no-match behavior were verified.</li>
+</ul>
+
+<h2>Course Outcome Connection</h2>
+<div class="callout">
+  This enhancement most directly supports the CS 499 outcome of designing and
+  evaluating computing solutions using algorithmic principles and computer
+  science practices while managing the trade-offs involved in design choices.
+</div>
+
+<p style="margin-top:2rem">
+  <a class="artifact-button primary-action"
+     href="narratives/algorithms-narrative.md">
+     Read the Algorithms Narrative
+  </a>
+</p>
+
+    </div>
+  </main>
+  <footer>
+    <div class="container">© 2026 Michael Langille • CS 499 Computer Science Capstone</div>
+  </footer>
+</body>
+</html>
