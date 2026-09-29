@@ -1,3 +1,5 @@
-# Enhanced Artifact
+Enhanced Artifact
 
-Place the completed enhanced source code here. Include source files, tests, `requirements.txt`, `.env.example`, setup instructions, and screenshots.
+This folder contains the Milestone Two Software Design and Engineering enhancement of the AnimalShelter artifact.
+`Enhanced\AnimalShelter.py`
+The portfolio page highlights the major design changes and links to the full source file.
