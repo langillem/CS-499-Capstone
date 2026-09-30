@@ -11,7 +11,7 @@ This repository contains my final CS 499 Computer Science Capstone ePortfolio. T
 
 ### View the Live Portfolio
 
-[CS 499 ePortfolio](https://langillem.github.io/CS-499-ePortfolio/)
+[CS 499 ePortfolio](https://langillem.github.io/CS-499-Capstone/)
 
 ---
 
