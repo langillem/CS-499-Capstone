@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Databases Narrative - Michael Langille CS 499 ePortfolio">
+  <title>Databases Narrative | Michael Langille</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="../index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+          <a href="../self-assessment.html">Self-Assessment</a>
+          <a href="../code-review.html">Code Review</a>
+          <a href="../software-design.html">Software Design</a>
+          <a href="../algorithms.html">Algorithms</a>
+          <a href="../databases.html">Databases</a>
+        </div>
+      </nav>
+
+      <p class="kicker">Enhancement Three • Artifact Narrative</p>
+      <h1>Databases Narrative</h1>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="container">
+      <p><a class="button secondary" href="../databases.html">← Back to Databases</a></p>
+
+<h2>Artifact Description</h2>
+
+<p>The artifact I selected for the database category is my AnimalShelter Python class,</p>
+
+<p>which I originally created during CS 340 Client/Server Development; the original</p>
+
+<p>file header is dated October 8, 2025. The class connects to the AAC MongoDB</p>
+
+<p>database and provides create, read, update, and delete operations for animal records</p>
+
+<p>in the animals collection. I selected the same core artifact for this milestone</p>
+
+<p>because the database layer is central to how the application works. The original</p>
+
+<p>project already demonstrated basic MongoDB connectivity and CRUD operations, but it</p>
+
+<p>gave me room to improve how the application handles credentials, validates database</p>
+
+<p>requests, manages indexes, performs queries, and uses MongoDB for server-side analysis.</p>
+
+<p>For Milestone Four, I created Enhanced_AnimalShelter_Database.py as a database-focused</p>
+
+<p>version of the artifact. I kept the software-design improvements from my earlier</p>
+
+<p>enhancement, including the MongoConfig configuration object, custom exceptions, structured</p>
+
+<p>logging, dependency injection, connection verification, and clean resource management. I</p>
+
+<p>then added features that are specific to database design and administration. These include</p>
+
+<p>environment-based configuration, safer MongoDB query handling, server-side sorting and</p>
+
+<p>pagination, document counting, reusable single-field and compound indexes, aggregation</p>
+
+<p>pipelines, index inspection, and query-plan explanation. The result is still recognizable</p>
+
+<p>as the AnimalShelter class from CS 340, but the database interface is much closer to the way</p>
+
+<p>I would want to structure a maintainable application.</p>
+
+<h2>Why I Selected the Artifact and How It Was Improved</h2>
+
+<p>I selected this artifact because it lets me demonstrate database skills in a working</p>
+
+<p>application instead of showing isolated MongoDB commands. The class is responsible for the</p>
+
+<p>boundary between the Python application and the database, so changes at this layer affect</p>
+
+<p>reliability, performance, security, and the amount of data that has to move between MongoDB</p>
+
+<p>and the application. That made it a viable choice for showing that database work involves</p>
+
+<p>more than storing records. It also involves deciding how queries are constructed, where</p>
+
+<p>processing should occur, how access is protected, and how the database can be tuned for</p>
+
+<p>common operations.</p>
+
+<p>One important improvement is credential handling. The original artifact accepted a</p>
+
+<p>username and password directly, which is convenient for a classroom exercise but can</p>
+
+<p>encourage credentials to be placed in source code. The enhanced MongoConfig class adds a</p>
+
+<p>from_environment() method so connection information can be loaded from environment variables.</p>
+
+<p>The connection URI also escapes credential values before they are inserted into the URI, and</p>
+
+<p>the logger records only the host, database, and collection instead of the complete URI. These</p>
+
+<p>changes do not replace MongoDB authentication or operating-system security, but they reduce</p>
+
+<p>the chance that a password is exposed through source control or application logs.</p>
+
+<p>I also strengthened query and update handling. MongoDB queries are flexible because operators</p>
+
+<p>can be nested inside dictionaries and lists, but that flexibility means the application should</p>
+
+<p>not accept every possible operator without review. I added recursive query validation that blocks</p>
+
+<p>server-side JavaScript-related operators such as $where, $function, and $accumulator. For updates,</p>
+
+<p>the class supports a defined set of common operators and rejects unsupported operators or a</p>
+
+<p>mixture of operator and non-operator fields. Update and delete methods also require a nonempty</p>
+
+<p>filter. This is especially important when the many option is used because an empty filter could</p>
+
+<p>unintentionally modify or delete a considerable portion of the collection.</p>
+
+<p>The performance portion of the enhancement moves more work to MongoDB when that is the better choice.</p>
+
+<p>The read method now supports server-side sorting, skipping, and limiting, which makes it possible to</p>
+
+<p>page through results without retrieving the full result set and sorting it in Python. The count method</p>
+
+<p>uses count_documents(), and aggregate_by() builds a MongoDB aggregation pipeline that can filter,</p>
+
+<p>group, count, sort, and limit results on the server. This is different from my Milestone Three</p>
+
+<p>algorithms enhancement, where I intentionally used in-memory algorithms to demonstrate merge sort, binary</p>
+
+<p>search, and dictionary indexing. In this database milestone, the goal is to let the database engine</p>
+
+<p>perform the work it is designed to handle efficiently.</p>
+
+<p>I added ensure_indexes() to create indexes on breed, animal_type, outcome_type, and a compound</p>
+
+<p>animal_type/breed key. The breed index also connects back to the indexing work I completed in CS 340. The</p>
+
+<p>compound index demonstrates that index design should reflect real query patterns rather than adding</p>
+
+<p>unrelated indexes. Because indexes improve many reads but also require storage and maintenance during inserts</p>
+
+<p>and updates, I also added get_index_information() explain_query(). These methods make it possible to inspect</p>
+
+<p>the indexes that exist and review MongoDB query plans when deciding whether an index is being used. The</p>
+
+<p>accompanying unit-test file contains eleven tests covering configuration, query validation, CRUD compatibility,</p>
+
+<p>sorting and pagination, counting, index creation, aggregation, and query-plan handling.</p>
+
+<h2>Course Outcome Coverage</h2>
+
+<p>This enhancement meets the main course outcome I planned for the database category: demonstrating the use of</p>
+
+<p>well-founded techniques, skills, and tools in computing practices to implement solutions that deliver value.</p>
+
+<p>MongoDB is no longer used only as a storage location in this version. I use database indexes, aggregation pipelines,</p>
+
+<p>server-side result controls, document counting, and query-plan inspection as part of the application design. These</p>
+
+<p>features improve the usefulness of the class for a larger dataset and show that I can make decisions about how an</p>
+
+<p>application should interact with a database rather than treating every query the same way.</p>
+
+<p>The enhancement also gives me stronger evidence for the security outcome. My earlier software-design work improved</p>
+
+<p>validation and exception handling, but this milestone focuses more directly on protecting the database boundary.</p>
+
+<p>Environment-based credentials reduce the need to place secrets in source code, blocked query operators reduce exposure</p>
+
+<p>to unsafe server-side execution, controlled update operators narrow the operations available through the class, and</p>
+
+<p>nonempty write filters reduce the risk of accidental mass changes. These controls do not make the application completely</p>
+
+<p>secure by themselves, but they demonstrate the security mindset of limiting unnecessary capability and validating data</p>
+
+<p>before it reaches a persistent data store.</p>
+
+<p>I also made progress on the outcome involving design and evaluation of computing solutions while considering trade-offs.</p>
+
+<p>Indexes can make searches faster, but every index consumes storage and adds work when records are inserted or updated.</p>
+
+<p>Server-side aggregation reduces the amount of data transferred to Python, but it places more processing responsibility on</p>
+
+<p>the database server. Strict query validation improves safety, but it must be designed carefully so legitimate application</p>
+
+<p>queries are not blocked. I do not need to change the outcome-coverage plan I established earlier, but I would now describe</p>
+
+<p>the database enhancement as stronger evidence for both the computing-tools outcome and the security outcome than I</p>
+
+<p>originally expected.</p>
+
+<h2>Reflection on the Enhancement Process</h2>
+
+<p>The biggest lesson from this enhancement was that database performance and database security are connected to design decisions</p>
+
+<p>made in the application code. In the original version, a successful connection and working CRUD methods were enough to meet</p>
+
+<p>the project requirements. While enhancing the class, I had to think about what happens when the collection becomes larger,</p>
+
+<p>when a query returns thousands of records, or when an application receives a poorly formed or unsafe filter. That changed my</p>
+
+<p>focus from simply making MongoDB respond to making the database interface more predictable and controlled.</p>
+
+<p>Indexing was one of the most useful areas to revisit. It is easy to think that adding more indexes automatically improves a</p>
+
+<p>database, but there is a cost to maintaining them. I chose a small set of indexes that match fields already important to the</p>
+
+<p>shelter data and added an explain_query() method so index use can be evaluated instead of assumed. The same idea applies to</p>
+
+<p>server-side aggregation. My Milestone Three enhancement showed that I understand in-memory algorithms, while this milestone</p>
+
+<p>helped me recognize when using MongoDB directly is a better engineering decision because it reduces data transfer and lets the</p>
+
+<p>database engine optimize the operation.</p>
+
+<p>The most challenging part was validating MongoDB requests without removing the flexibility that makes MongoDB useful. Queries</p>
+
+<p>can contain nested dictionaries, logical operators, arrays, and comparison operators, so a simple check of the top-level keys</p>
+
+<p>would not be enough. I used recursive validation to inspect nested query structures and focused on blocking the server-side</p>
+
+<p>JavaScript operators that do not belong in this interface. I also kept dependency injections from the earlier enhancement, which</p>
+
+<p>allowed the database logic to be tested with a mock MongoDB client. All eleven logic-level unit tests passed during validation</p>
+
+<p>without requiring changes to the real AAC collection. Overall, Milestone Four helped me move from basic CRUD programming toward</p>
+
+<p>thinking about the database as an engineered part of the application with its own performance, security, and maintainability concerns.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Michael Langille • CS 499 Computer Science Capstone
+    </div>
+  </footer>
+</body>
+</html>

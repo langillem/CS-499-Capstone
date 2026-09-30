@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Software Design and Engineering enhancement - Michael Langille CS 499 ePortfolio">
+  <title>Software Design and Engineering | Michael Langille</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+            <a href="self-assessment.html">Self-Assessment</a>
+            <a href="code-review.html">Code Review</a>
+            <a href="software-design.html">Software Design</a>
+            <a href="algorithms.html">Algorithms</a>
+            <a href="databases.html">Databases</a>
+        </div>
+      </nav>
+      <p class="kicker">Enhancement One</p>
+      <h1>Software Design and Engineering</h1>
+    </div>
+
+
+
+
+  </header>
+
+  <main class="content">
+    <div class="container">
+      
+<p>
+  For Milestone Two, I enhanced my original CS 340 <code>AnimalShelter</code>
+  CRUD module in the <strong>Software Design and Engineering</strong> category.
+  The goal was not to change the purpose of the application, but to make the
+  existing code easier to maintain, test, diagnose, and reuse.
+</p>
+
+<div class="artifact-actions">
+  <a class="artifact-button primary-action"
+     href="artifacts/enhanced/Enhanced_AnimalShelter.py">
+     View Full Enhanced_AnimalShelter.py
+  </a>
+  <a class="artifact-button secondary-action"
+     href="artifacts/original/Original_AnimalShelter.py">
+     View Original_AnimalShelter.py
+  </a>
+</div>
+
+<h2>Enhancement Overview</h2>
+<p>
+  The original artifact already supported MongoDB create, read, update, and
+  delete operations. My enhancement keeps those capabilities while improving
+  the internal design. I introduced a separate configuration object, centralized
+  validation, structured logging, custom exceptions, dependency injection,
+  connection verification, and explicit resource management.
+</p>
+
+<div class="enhancement-grid">
+  <div class="mini-card"><strong>Maintainability</strong><br>Configuration and validation are separated from CRUD logic.</div>
+  <div class="mini-card"><strong>Testability</strong><br>An existing MongoDB client can be injected for unit testing.</div>
+  <div class="mini-card"><strong>Reliability</strong><br>Invalid input and database failures now produce clear exceptions.</div>
+  <div class="mini-card"><strong>Resource Management</strong><br>The class can safely close connections through a context manager.</div>
+</div>
+
+<h2>Before and After: MongoDB Connection Design</h2>
+<p>
+  One of the clearest issues in the original code was that the MongoDB client
+  was created twice. The enhanced version creates the client once, centralizes
+  configuration, supports dependency injection, and can verify the connection
+  with a MongoDB <code>ping</code>.
+</p>
+
+<div class="comparison-grid">
+  <section class="comparison-panel">
+    <h3>Before: Original Connection</h3>
+    <pre class="portfolio-code"><code>self.client = MongoClient(uri)
+
+self.database = self.client[db_name]
+self.collection = self.database[collection_name]
+
+# Connect to MongoDB
+self.client = MongoClient(uri, tls=tls)
+
+self.database = self.client[db_name]
+self.collection = self.database[collection_name]</code></pre>
+    <p class="code-note">
+      The original constructor duplicated client creation, which added
+      unnecessary complexity and made the class harder to test.
+    </p>
+  </section>
+
+  <section class="comparison-panel enhanced-panel">
+    <h3>After: Enhanced Connection</h3>
+    <pre class="portfolio-code"><code>self.client = client or MongoClient(
+    self.config.build_uri(),
+    tls=self.config.tls,
+    serverSelectionTimeoutMS=self.config.server_selection_timeout_ms,
+)
+
+self.database = self.client[self.config.db_name]
+self.collection = self.database[self.config.collection_name]
+
+if verify_connection:
+    self.client.admin.command(&quot;ping&quot;)</code></pre>
+    <p class="code-note">
+      The enhanced constructor creates one client, supports an injected client
+      for testing, applies a server-selection timeout, and optionally verifies
+      the connection before the object is used.
+    </p>
+  </section>
+</div>
+
+<h2>Before and After: Validation and Error Handling</h2>
+<p>
+  The original methods often returned <code>False</code>, <code>0</code>, or an
+  empty list when something failed. That behavior made an invalid input look
+  similar to a valid operation that simply found no matching records. The
+  enhanced version separates validation failures from database failures.
+</p>
+
+<div class="comparison-grid">
+  <section class="comparison-panel">
+    <h3>Before: Silent Failure</h3>
+    <pre class="portfolio-code"><code>if not isinstance(document, dict) or not document:
+    return False
+
+...
+except PyMongoError as exc:
+    print(f&quot;Create error: {exc}&quot;)
+    return False</code></pre>
+  </section>
+
+  <section class="comparison-panel enhanced-panel">
+    <h3>After: Explicit Validation and Exceptions</h3>
+    <pre class="portfolio-code"><code>document = self._require_nonempty_dict(
+    document, &quot;document&quot;
+)
+
+try:
+    result = self.collection.insert_one(document)
+    return bool(result.acknowledged)
+except PyMongoError as exc:
+    LOGGER.exception(&quot;Create operation failed.&quot;)
+    raise AnimalShelterError(
+        &quot;Unable to create the animal record.&quot;
+    ) from exc</code></pre>
+  </section>
+</div>
+
+<p>
+  This change improves debugging because the calling application can distinguish
+  a validation problem from a MongoDB error. Structured logging also preserves
+  diagnostic information without relying on scattered <code>print()</code>
+  statements.
+</p>
+
+<h2>Key Enhancement: Reusable MongoDB Configuration</h2>
+<p>
+  I added an immutable <code>MongoConfig</code> data class to keep connection
+  settings together. Credential values are safely escaped before being placed
+  into the MongoDB URI.
+</p>
+
+<pre class="portfolio-code"><code>@dataclass(frozen=True)
+class MongoConfig:
+    username: str = &quot;&quot;
+    password: str = &quot;&quot;
+    host: str = &quot;localhost&quot;
+    port: int = 27017
+    auth_source: str = &quot;admin&quot;
+    db_name: str = &quot;aac&quot;
+    collection_name: str = &quot;animals&quot;
+    tls: bool = False
+
+    def build_uri(self) -&gt; str:
+        if self.username and self.password:
+            username = quote_plus(self.username)
+            password = quote_plus(self.password)
+            auth_source = quote_plus(self.auth_source)
+            return (
+                f&quot;mongodb://{username}:{password}@&quot;
+                f&quot;{self.host}:{self.port}/&quot;
+                f&quot;?authSource={auth_source}&quot;
+            )
+        return f&quot;mongodb://{self.host}:{self.port}&quot;</code></pre>
+
+<p>
+  This reduces the amount of configuration logic inside the
+  <code>AnimalShelter</code> class and makes future configuration changes easier
+  to manage. It also demonstrates separation of concerns: configuration is
+  responsible for describing the connection, while <code>AnimalShelter</code>
+  remains responsible for data operations.
+</p>
+
+<h2>Key Enhancement: Resource Management</h2>
+<p>
+  The enhanced class now knows whether it owns the MongoDB client. When it does,
+  it can close the client explicitly. Context-manager support also allows the
+  object to be used with Python's <code>with</code> statement.
+</p>
+
+<pre class="portfolio-code"><code>def close(self) -&gt; None:
+    &quot;&quot;&quot;Close the MongoDB client when this object created the client.&quot;&quot;&quot;
+    if self._owns_client and self.client is not None:
+        self.client.close()
+        LOGGER.info(&quot;MongoDB client closed.&quot;)
+
+def __enter__(self) -&gt; &quot;AnimalShelter&quot;:
+    return self
+
+def __exit__(self, exc_type, exc_value, traceback) -&gt; None:
+    self.close()</code></pre>
+
+<p>
+  This is a small design change, but it improves lifecycle management and makes
+  ownership of external resources more explicit.
+</p>
+
+<h2>Skills Demonstrated</h2>
+<ul class="portfolio-checks">
+  <li><strong>Object-oriented design:</strong> responsibilities are separated into configuration, validation, connection management, and CRUD behavior.</li>
+  <li><strong>Defensive programming:</strong> invalid inputs are rejected before MongoDB operations are attempted.</li>
+  <li><strong>Exception design:</strong> custom exception classes communicate the type of failure to the calling application.</li>
+  <li><strong>Logging:</strong> structured log messages replace console-only error reporting.</li>
+  <li><strong>Dependency injection:</strong> an existing client can be supplied, making the class easier to unit test without a live MongoDB server.</li>
+  <li><strong>Backward compatibility:</strong> the familiar <code>AnimalShelter(username, password)</code> constructor remains supported.</li>
+</ul>
+
+<h2>Why the Enhancement Matters</h2>
+<div class="callout">
+  The enhanced version is not simply longer code. It is organized so that failures
+  are easier to diagnose, dependencies are easier to test, configuration is easier
+  to change, and resources are handled deliberately. These improvements move the
+  artifact from a functional academic CRUD module toward a more maintainable
+  software component.
+</div>
+
+<h2>Artifact Files</h2>
+<div class="grid two">
+  <article class="card">
+    <span class="tag">Before Enhancement</span>
+    <h3>Original_AnimalShelter.py</h3>
+    <p>
+      The CS 340 version containing the original CRUD behavior and connection
+      logic used as the starting point for the capstone enhancement.
+    </p>
+    <a href="artifacts/original/Original_AnimalShelter.py">Open original source code →</a>
+  </article>
+
+  <article class="card">
+    <span class="tag">Milestone Two</span>
+    <h3>Enhanced_AnimalShelter.py</h3>
+    <p>
+      The software-design version with centralized configuration, validation,
+      logging, custom exceptions, dependency injection, and resource management.
+    </p>
+    <a href="artifacts/enhanced/Enhanced_AnimalShelter.py">Open enhanced source code →</a>
+  </article>
+</div>
+
+<p style="margin-top:2rem">
+  <a class="artifact-button primary-action"
+     href="narratives/software-design-narrative.html">
+     Read the Software Design Narrative
+  </a>
+</p>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">© 2026 Michael Langille • CS 499 Computer Science Capstone</div>
+  </footer>
+</body>
+</html>
