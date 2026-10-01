@@ -29,153 +29,65 @@
 
   <main class="content">
     <div class="container">
-      <p><a class="button secondary" href="../software-design.html">← Back to Software Design</a></p>
+      <p><a class="artifact-button secondary-action" href="../software-design.html">← Back to Software Design</a></p>
 
-<h2>Artifact Description</h2>
+<h3>Artifact Description</h3>
 
-<p>The artifact I selected for this enhancement is my AnimalShelter.py CRUD module</p>
+<p>The artifact I selected for this enhancement is my AnimalShelter.py CRUD module from CS 340 Client/Server Development. I originally created it in October 2025 as 
+        part of the Grazioso Salvare animal-shelter dashboard project. The module acts as the data-access layer between Python and a MongoDB database containing 
+        Austin Animal Center records. It provides create, read, update, and delete operations and was designed so the dashboard could work with MongoDB without 
+        putting database logic directly into the user-interface code. I selected this artifact because it represents a project where several areas of computer 
+        science came together in one place: object-oriented Python, database connectivity, validation, exception handling, and support for a larger application.</p>
 
-<p>from CS 340 Client/Server Development. I originally created it in October 2025</p>
 
-<p>as part of the Grazioso Salvare animal-shelter dashboard project. The module</p>
+<h3>Why I Included the Artifact and How I Improved It</h3>
 
-<p>acts as the data-access layer between Python and a MongoDB database containing</p>
+<p>I included AnimalShelter.py in my ePortfolio because the original version worked, but it also gave me room to show how I have grown as a software developer.
+        The original class had a clear purpose and basic validation, but most of the connection settings were handled directly inside the constructor, errors were 
+        generally printed and converted into False, zero, or an empty list, and the class was tightly coupled to a live MongoDB connection. For the CS 499 enhancement, 
+        I kept the familiar CRUD interface but redesigned the module to separate configuration from behavior. I added a MongoConfig dataclass, support for environment variables,
+        URL-encoded credentials, custom exception types, structured logging, a MongoDB health check, explicit connection cleanup, and context-manager support. 
+        I also added dependency injection so a MongoClient can be supplied during testing instead of requiring the class to create a live connection every time. 
+        Centralized input validation now gives the class consistent behavior, and empty update or delete filters continue to be rejected so that an accidental broad 
+        operation is less likely. The read method was also expanded to support optional sorting and a result limit.</p>
 
-<p>Austin Animal Center records. It provides create, read, update, and delete</p>
+<p>The testing support is an important part of the enhancement because it changes the design rather than simply adding more code. I created a separate unit-test file that uses 
+        mocks to exercise validation, update behavior, and read options without depending on a running database. This makes the module easier to maintain and safer to change later. 
+        The enhanced design is also easier for another developer to understand because configuration, validation, database operations, and resource management have clearer responsibilities. 
+        These improvements better reflect professional software-engineering practices than the original course version while still preserving compatibility with the way the class was 
+        used in the CS 340 project.</p>
 
-<p>operations and was designed so the dashboard could work with MongoDB without</p>
 
-<p>putting database logic directly into the user-interface code. I selected this</p>
 
-<p>artifact because it represents a project where several areas of computer science</p>
+<h3>Course Outcomes</h3>
 
-<p>came together in one place: object-oriented Python, database connectivity,</p>
+<p>This enhancement makes the strongest progress toward course outcome four, which focuses on using well-founded techniques, skills, and tools to implement computing solutions that deliver value. 
+        The redesigned class is more maintainable, testable, and reusable, and it still supports the same real-world purpose of managing animal-shelter records for the Grazioso Salvare dashboard.
+        It also supports course outcome five because I changed the way credentials and potentially destructive operations are handled. Credentials no longer need to be embedded directly in source 
+        code, and the module validates requests before update or delete operations are sent to MongoDB. The logging and exception structure also makes failures easier to diagnose without casually 
+        exposing connection details.</p>
 
-<p>validation, exception handling, and support for a larger application.</p>
+<p>The work also supports outcome two because the enhanced code, docstrings, naming, README file, and narrative are intended to communicate the design clearly to both an instructor and another developer.
+        I still plan to use the later algorithm/data-structure and database enhancements to provide stronger evidence for outcome three and additional evidence for outcomes four and five. I do not see a 
+        need to remove any outcomes from my overall coverage plan, but Milestone Two helped me see that one artifact can support several outcomes when the enhancement is designed around more than one 
+        concern.</p>
 
-<h2>Why I Included the Artifact and How I Improved It</h2>
 
-<p>I included AnimalShelter.py in my ePortfolio because the original version worked,</p>
+<h3>Reflection on the Enhancement Process</h3>
 
-<p>but it also gave me room to show how I have grown as a software developer. The</p>
+<p>The biggest thing I learned from this enhancement is that improving software design is often about reducing coupling and making responsibilities clearer. My first instinct was to think of an 
+        enhancement as adding more features. Once I worked through the code, I realized that making the module easier to configure, test, troubleshoot, and safely close was just as important. 
+        Dependency injection was a good example. It required only a small change to the constructor, but it made it possible to test the class with a mock client instead of requiring MongoDB for 
+        every test. Separating the connection settings into a dataclass had a similar effect because it made configuration easier to validate and easier to move outside the source code.</p>
 
-<p>original class had a clear purpose and basic validation, but most of the connection</p>
+<p>The main challenge was improving the design without breaking the interface that the existing dashboard expects. I did not want the enhancement to become a completely different program just to show 
+        change, so I kept the original constructor arguments and the create, read, update, and delete method names while building the new design features around them. I also had to consider the trade-off 
+        between hiding errors and making the caller responsible for them. The original version often returned a default value when MongoDB raised an error. In the enhanced version, invalid input and 
+        database failures raise specific exceptions while logging useful diagnostic information. This requires the calling application to handle failures deliberately, but a failed database operation 
+        should not look the same as a legitimate query that returned no records. Overall, the enhancement moved me from asking only whether code works to thinking about whether it will remain dependable,
+        understandable, and maintainable when someone else uses or modifies it.</p>
 
-<p>settings were handled directly inside the constructor, errors were generally printed</p>
 
-<p>and converted into False, zero, or an empty list, and the class was tightly coupled</p>
-
-<p>to a live MongoDB connection. For the CS 499 enhancement, I kept the familiar CRUD</p>
-
-<p>interface but redesigned the module to separate configuration from behavior. I added</p>
-
-<p>a MongoConfig dataclass, support for environment variables, URL-encoded credentials,</p>
-
-<p>custom exception types, structured logging, a MongoDB health check, explicit</p>
-
-<p>connection cleanup, and context-manager support. I also added dependency injection so</p>
-
-<p>a MongoClient can be supplied during testing instead of requiring the class to create</p>
-
-<p>a live connection every time. Centralized input validation now gives the class</p>
-
-<p>consistent behavior, and empty update or delete filters continue to be rejected so that</p>
-
-<p>an accidental broad operation is less likely. The read method was also expanded to</p>
-
-<p>support optional sorting and a result limit.</p>
-
-<p>The testing support is an important part of the enhancement because it changes the design</p>
-
-<p>rather than simply adding more code. I created a separate unit-test file that uses mocks</p>
-
-<p>to exercise validation, update behavior, and read options without depending on a running</p>
-
-<p>database. This makes the module easier to maintain and safer to change later. The enhanced</p>
-
-<p>design is also easier for another developer to understand because configuration, validation,</p>
-
-<p>database operations, and resource management have clearer responsibilities. These</p>
-
-<p>improvements better reflect professional software-engineering practices than the original</p>
-
-<p>course version while still preserving compatibility with the way the class was used in the</p>
-
-<p>CS 340 project.</p>
-
-<h2>Course Outcomes</h2>
-
-<p>This enhancement makes the strongest progress toward course outcome four, which focuses on</p>
-
-<p>using well-founded techniques, skills, and tools to implement computing solutions that</p>
-
-<p>deliver value. The redesigned class is more maintainable, testable, and reusable, and it</p>
-
-<p>still supports the same real-world purpose of managing animal-shelter records for the</p>
-
-<p>Grazioso Salvare dashboard. It also supports course outcome five because I changed the</p>
-
-<p>way credentials and potentially destructive operations are handled. Credentials no longer</p>
-
-<p>need to be embedded directly in source code, and the module validates requests before update</p>
-
-<p>or delete operations are sent to MongoDB. The logging and exception structure also makes</p>
-
-<p>failures easier to diagnose without casually exposing connection details.</p>
-
-<p>The work also supports outcome two because the enhanced code, docstrings, naming, README file,</p>
-
-<p>and narrative are intended to communicate the design clearly to both an instructor and another</p>
-
-<p>developer. I still plan to use the later algorithm/data-structure and database enhancements to</p>
-
-<p>provide stronger evidence for outcome three and additional evidence for outcomes four and five.</p>
-
-<p>I do not see a need to remove any outcomes from my overall coverage plan, but Milestone Two</p>
-
-<p>helped me see that one artifact can support several outcomes when the enhancement is designed</p>
-
-<p>around more than one concern.</p>
-
-<h2>Reflection on the Enhancement Process</h2>
-
-<p>The biggest thing I learned from this enhancement is that improving software design is often</p>
-
-<p>about reducing coupling and making responsibilities clearer. My first instinct was to think of</p>
-
-<p>an enhancement as adding more features. Once I worked through the code, I realized that making</p>
-
-<p>the module easier to configure, test, troubleshoot, and safely close was just as important.</p>
-
-<p>Dependency injection was a good example. It required only a small change to the constructor, but</p>
-
-<p>it made it possible to test the class with a mock client instead of requiring MongoDB for every</p>
-
-<p>test. Separating the connection settings into a dataclass had a similar effect because it made</p>
-
-<p>configuration easier to validate and easier to move outside the source code.</p>
-
-<p>The main challenge was improving the design without breaking the interface that the existing</p>
-
-<p>dashboard expects. I did not want the enhancement to become a completely different program just to</p>
-
-<p>show change, so I kept the original constructor arguments and the create, read, update, and delete</p>
-
-<p>method names while building the new design features around them. I also had to consider the trade-off</p>
-
-<p>between hiding errors and making the caller responsible for them. The original version often returned</p>
-
-<p>a default value when MongoDB raised an error. In the enhanced version, invalid input and database</p>
-
-<p>failures raise specific exceptions while logging useful diagnostic information. This requires the</p>
-
-<p>calling application to handle failures deliberately, but a failed database operation should not look</p>
-
-<p>the same as a legitimate query that returned no records. Overall, the enhancement moved me from asking</p>
-
-<p>only whether code works to thinking about whether it will remain dependable, understandable, and</p>
-
-<p>maintainable when someone else uses or modifies it.</p>
     </div>
   </main>
 

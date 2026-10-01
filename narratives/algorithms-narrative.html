@@ -28,161 +28,179 @@
   </header>
 
   <main class="content">
-    <div class="container">
-      <p><a class="button secondary" href="../algorithms.html">← Back to Algorithms</a></p>
+      <div class="container">
+          <p><a class="artifact-button secondary-action" href="../algorithms.html">← Back to Algorithms</a></p>
 
-<h2>Artifact Description</h2>
+          <h3>Artifact Description</h3>
 
-<p>The artifact I selected is my AnimalShelter Python class, which was originally</p>
+          <p>
+              The artifact I selected is my AnimalShelter Python class, which was originally
 
-<p>created during CS 340 Client/Server Development to perform create, read, update,</p>
+              created during CS 340 Client/Server Development to perform create, read, update,
 
-<p>and delete operations on animal records stored in MongoDB. I first enhanced this</p>
+              and delete operations on animal records stored in MongoDB. I first enhanced this
 
-<p>artifact for the software design and engineering category by improving validation,</p>
+              artifact for the software design and engineering category by improving validation,
 
-<p>error handling, logging, dependency injection, and resource management. For</p>
+              error handling, logging, dependency injection, and resource management. For
 
-<p>Milestone Three, I built on that version and focused specifically on algorithms and</p>
+              Milestone Three, I built on that version and focused specifically on algorithms and
 
-<p>data structures. The enhanced file, Enhanced_AnimalShelter_Algorithms.py, keeps the</p>
+              data structures. The enhanced file, Enhanced_AnimalShelter_Algorithms.py, keeps the
 
-<p>existing CRUD functionality while adding in-memory tools for sorting, searching,</p>
+              existing CRUD functionality while adding in-memory tools for sorting, searching,
 
-<p>indexing, and summarizing shelter records.</p>
+              indexing, and summarizing shelter records.
+          </p>
 
-<h2>Why I Selected the Artifact and How It Was Improved</h2>
+          <h3>Why I Selected the Artifact and How It Was Improved</h3>
 
-<p>I selected this artifact because it gave me a practical way to demonstrate</p>
+          <p>
+              I selected this artifact because it gave me a practical way to demonstrate
 
-<p>algorithms and data structures inside a program that already solves a real</p>
+              algorithms and data structures inside a program that already solves a real
 
-<p>data-management problem. Rather than adding algorithms that were disconnected</p>
+              data-management problem. Rather than adding algorithms that were disconnected
 
-<p>from the purpose of the application, I added features that could be useful</p>
+              from the purpose of the application, I added features that could be useful
 
-<p>after animal records are retrieved from MongoDB. The first major enhancement</p>
+              after animal records are retrieved from MongoDB. The first major enhancement
 
-<p>is a custom merge sort that can order records by a selected field such as name,</p>
+              is a custom merge sort that can order records by a selected field such as name,
 
-<p>breed, or animal type. Merge sort performs consistently well even when the records</p>
+              breed, or animal type. Merge sort performs consistently well even when the records
 
-<p>are arranged differently. My implementation also creates a new sorted list, so the</p>
+              are arranged differently. My implementation also creates a new sorted list, so the
 
-<p>original order of the animal records is preserved.</p>
+              original order of the animal records is preserved.
+          </p>
 
-<p>I also added a binary search that works on records that have already been sorted.</p>
+          <p>
+              I also added a binary search that works on records that have already been sorted.
 
-<p>Instead of scanning every record one at a time, the algorithm repeatedly divides</p>
+              Instead of scanning every record one at a time, the algorithm repeatedly divides
 
-<p>the search area in half. The binary search quickly narrows the list to find a</p>
+              the search area in half. The binary search quickly narrows the list to find a
 
-<p>matching record, and if several records have the same value, it takes a little</p>
+              matching record, and if several records have the same value, it takes a little
 
-<p>additional time to collect and return all those matches. I designed it to return</p>
+              additional time to collect and return all those matches. I designed it to return
 
-<p>all records that match the requested value, which is useful when more than one</p>
+              all records that match the requested value, which is useful when more than one
 
-<p>animal has the same name or category. This enhancement shows that I can choose an</p>
+              animal has the same name or category.
+          </p>
 
-<p>algorithm based on the way the data is organized and the type of lookup being</p>
+          This enhancement shows that I can choose an
 
-<p>performed. The data-structure enhancement uses a Python dictionary as an in-memory</p>
+          algorithm based on the way the data is organized and the type of lookup being
 
-<p>lookup index. The index organizes records into groups based on a selected field,</p>
+          performed. The data-structure enhancement uses a Python dictionary as an in-memory
 
-<p>such as animal type, so the program can usually find the needed group almost immediately.</p>
+          lookup index. The index organizes records into groups based on a selected field,
 
-<p>The index first organizes the animal records into groups, such as dogs and cats. Once</p>
+          such as animal type, so the program can usually find the needed group almost immediately.
 
-<p>those groups are created, the program can usually find a specific group almost</p>
+          he index first organizes the animal records into groups, such as dogs and cats. Once
 
-<p>immediately without searching through every record again. I used that same structure</p>
+          those groups are created, the program can usually find a specific group almost
 
-<p>to create a frequency-count method for quickly summarizing categorical values. I also</p>
+          immediately without searching through every record again. I used that same structure
 
-<p>added read_sorted(), which connects the MongoDB read operation to the custom merge-sort</p>
+          to create a frequency-count method for quickly summarizing categorical values. I also
 
-<p>algorithm. Together, these changes make the artifact more useful for analysis while</p>
+          added read_sorted(), which connects the MongoDB read operation to the custom merge-sort
 
-<p>clearly demonstrating sorting, searching, hashing, and the use of dictionaries and lists.</p>
+          algorithm. Together, these changes make the artifact more useful for analysis while
 
-<h2>Course Outcome Coverage</h2>
+          clearly demonstrating sorting, searching, hashing, and the use of dictionaries and lists.</p>
 
-<p>This enhancement meets the primary course outcome I planned to address for the algorithms</p>
+          <h3>Course Outcome Coverage</h3>
 
-<p>and data structures category: designing and evaluating computing solutions using</p>
+          <p>
+              This enhancement meets the primary course outcome I planned to address for the algorithms
 
-<p>algorithmic principles while considering the trade-offs involved in design choices. I did</p>
+              and data structures category: designing and evaluating computing solutions using
 
-<p>not simply add a sorting method; I considered when each approach would make sense. Merge</p>
+              algorithmic principles while considering the trade-offs involved in design choices. I did
 
-<p>sort performs reliably as the number of records grows, but it uses additional memory</p>
+              not simply add a sorting method; I considered when each approach would make sense. Merge
 
-<p>because it creates temporary lists while sorting the data. Binary search is much faster than</p>
+              sort performs reliably as the number of records grows, but it uses additional memory
 
-<p>a linear scan for repeated searches, but the records must already be sorted. A dictionary</p>
+              because it creates temporary lists while sorting the data. Binary search is much faster than
 
-<p>index makes repeated exact-key searches very fast on average, but it also uses extra memory</p>
+              a linear scan for repeated searches, but the records must already be sorted. A dictionary
 
-<p>to maintain the index. These trade-offs helped me think beyond whether an algorithm works and</p>
+              index makes repeated exact-key searches very fast on average, but it also uses extra memory
 
-<p>focus more on why I would choose one approach over another.</p>
+              to maintain the index. These trade-offs helped me think beyond whether an algorithm works and
 
-<p>The work also supports the outcome related to using well-founded computing techniques and tools</p>
+              focus more on why I would choose one approach over another.
+          </p>
 
-<p>to deliver value. The algorithms are integrated with the existing AnimalShelter class rather</p>
+          <p>
+              The work also supports the outcome related to using well-founded computing techniques and tools
 
-<p>than isolated classroom examples. I retained the earlier software-engineering improvements and</p>
+              to deliver value. The algorithms are integrated with the existing AnimalShelter class rather
 
-<p>added unit tests for the new behavior. In PyCharm, all eight algorithm and data-structure tests</p>
+              than isolated classroom examples. I retained the earlier software-engineering improvements and
 
-<p>passed successfully, including tests for normal and reverse sorting, duplicate search results,</p>
+              added unit tests for the new behavior. In PyCharm, all eight algorithm and data-structure tests
 
-<p>dictionary indexing, frequency counts, validation, and sorting records returned from the database</p>
+              passed successfully, including tests for normal and reverse sorting, duplicate search results,
 
-<p>layer. I do not currently need to change my outcome-coverage plan, because the enhancement addresses</p>
+              dictionary indexing, frequency counts, validation, and sorting records returned from the database
 
-<p>the algorithmic outcome I intended while also strengthening the technical quality of the artifact.</p>
+              layer. I do not currently need to change my outcome-coverage plan, because the enhancement addresses
 
-<h2>Reflection</h2>
+              the algorithmic outcome I intended while also strengthening the technical quality of the artifact.
+          </p>
 
-<p>One of the most useful things I learned from this enhancement was that choosing an algorithm is not</p>
+          <h3>Reflection</h3>
 
-<p>just about picking the one with the fastest performance rating. I also must consider memory use,</p>
+          <p>
+              One of the most useful things I learned from this enhancement was that choosing an algorithm is not
 
-<p>complexity, the size of the data, and how the program will actually be used. The surrounding</p>
+              just about picking the one with the fastest performance rating. I also must consider memory use,
 
-<p>conditions matter. For example, binary search is efficient, but it only provides that advantage when</p>
+              complexity, the size of the data, and how the program will actually be used. The surrounding
 
-<p>the records are already sorted (PastPaperHero | Algorithms - Algorithm Design and Analysis, n.d.). A</p>
+              conditions matter. For example, binary search is efficient, but it only provides that advantage when
 
-<p>dictionary can make repeated lookups extremely fast, but building and storing the index has a memory</p>
+              the records are already sorted (PastPaperHero | Algorithms - Algorithm Design and Analysis, n.d.). A
 
-<p>cost. I also had to think about whether sorting should happen in Python or in MongoDB. I intentionally</p>
+              dictionary can make repeated lookups extremely fast, but building and storing the index has a memory
+              cost.</p>
 
-<p>used an in-memory custom merge sort for this capstone enhancement because it demonstrates my</p>
+          <p>
+              I also had to think about whether sorting should happen in Python or in MongoDB. I intentionally
 
-<p>understanding of the algorithm. For a very large production dataset, however, a MongoDB server-side sort</p>
+              used an in-memory custom merge sort for this capstone enhancement because it demonstrates my
 
-<p>with an appropriate database index could reduce application memory usage and might be the better design choice.</p>
+              understanding of the algorithm. For a very large production dataset, however, a MongoDB server-side sort
 
-<p>The biggest challenge was adding the new functionality without undoing the improvements from the first</p>
+              with an appropriate database index could reduce application memory usage and might be the better design choice.
+          </p>
 
-<p>enhancement. I wanted the algorithms to fit naturally into the existing class and still preserve validation,</p>
+          <p>
+              The biggest challenge was adding the new functionality without undoing the improvements from the first
 
-<p>testability, and compatibility with the CRUD methods. Testing was especially important because the algorithms</p>
+              enhancement. I wanted the algorithms to fit naturally into the existing class and still preserve validation,
 
-<p>needed to handle duplicate values, reverse ordering, invalid input, and the interaction between database reads</p>
+              testability, and compatibility with the CRUD methods. Testing was especially important because the algorithms
 
-<p>and in-memory sorting. Seeing all eight tests passed in PyCharm gave me confidence that the enhancement behaves</p>
+              needed to handle duplicate values, reverse ordering, invalid input, and the interaction between database reads
 
-<p>as intended. Overall, this milestone helped me connect concepts such as time complexity, space complexity,</p>
+              and in-memory sorting. Seeing all eight tests passed in PyCharm gave me confidence that the enhancement behaves
 
-<p>searching, sorting, hashing, and data structures to a working application rather than treating them as separate</p>
+              as intended. Overall, this milestone helped me connect concepts such as time complexity, space complexity,
 
-<p>theoretical topics.</p>
-    </div>
+              searching, sorting, hashing, and data structures to a working application rather than treating them as separate
+
+              theoretical topics.
+          </p>
+      </div>
   </main>
 
   <footer>
