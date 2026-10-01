@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Algorithms and Data Structures Unit Tests - Michael Langille CS 499 ePortfolio">
+  <title>Algorithms and Data Structures Unit Tests | Michael Langille</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="../index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+          <a href="../self-assessment.html">Self-Assessment</a>
+          <a href="../code-review.html">Code Review</a>
+          <a href="../software-design.html">Software Design</a>
+          <a href="../algorithms.html">Algorithms</a>
+          <a href="../databases.html">Databases</a>
+        </div>
+      </nav>
+
+      <p class="kicker">Enhancement Two • Test Code</p>
+      <h1>Algorithms and Data Structures Unit Tests</h1>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="container">
+      <p>These unit tests validate the Algorithms and Data Structures enhancement, including merge sort, reverse sorting, binary search, duplicate matches, dictionary indexing, frequency counting, input validation, and sorted database results.</p>
+
+      <div class="enhancement-grid">
+        <div class="mini-card">
+          <strong>Test Framework</strong><br>
+          Python unittest
+        </div>
+        <div class="mini-card">
+          <strong>Test Count</strong><br>
+          8 unit tests
+        </div>
+        <div class="mini-card">
+          <strong>Database Dependency</strong><br>
+          Mocked with MagicMock
+        </div>
+        <div class="mini-card">
+          <strong>Purpose</strong><br>
+          Verify enhancement behavior without requiring a live MongoDB server
+        </div>
+      </div>
+
+      <div class="artifact-actions">
+        <a class="artifact-button secondary-action" href="../algorithms.html">
+          ← Back to Algorithms
+        </a>
+      </div>
+
+      <h2>Complete Test Source</h2>
+      <p class="code-note">
+        This page displays the complete Python unit-test source directly in the browser.
+      </p>
+
+      <pre class="portfolio-code"><code>&quot;&quot;&quot;Unit tests for CS 499 Enhancement Two: Algorithms and Data Structures.&quot;&quot;&quot;
+
+import unittest
+from unittest.mock import MagicMock
+
+from Enhanced_AnimalShelter_Algorithms import (
+    AnimalShelter,
+    DataValidationError,
+    MongoConfig,
+)
+
+
+class AnimalShelterAlgorithmsTests(unittest.TestCase):
+    def setUp(self):
+        self.client = MagicMock()
+        self.database = MagicMock()
+        self.collection = MagicMock()
+        self.client.__getitem__.return_value = self.database
+        self.database.__getitem__.return_value = self.collection
+
+        self.shelter = AnimalShelter(
+            config=MongoConfig(username=&quot;test&quot;, password=&quot;secret&quot;),
+            client=self.client,
+            verify_connection=False,
+        )
+
+        self.records = [
+            {&quot;name&quot;: &quot;Zelda&quot;, &quot;animal_type&quot;: &quot;Dog&quot;, &quot;breed&quot;: &quot;Labrador&quot;},
+            {&quot;name&quot;: &quot;Bella&quot;, &quot;animal_type&quot;: &quot;Cat&quot;, &quot;breed&quot;: &quot;Domestic Shorthair&quot;},
+            {&quot;name&quot;: &quot;Charlie&quot;, &quot;animal_type&quot;: &quot;Dog&quot;, &quot;breed&quot;: &quot;Beagle&quot;},
+            {&quot;name&quot;: &quot;Bella&quot;, &quot;animal_type&quot;: &quot;Dog&quot;, &quot;breed&quot;: &quot;German Shepherd&quot;},
+            {&quot;name&quot;: &quot;Max&quot;, &quot;animal_type&quot;: &quot;Cat&quot;, &quot;breed&quot;: &quot;Siamese&quot;},
+        ]
+
+    def test_merge_sort_orders_records_without_mutating_original(self):
+        original_order = [record[&quot;name&quot;] for record in self.records]
+
+        sorted_records = self.shelter.merge_sort(self.records, &quot;name&quot;)
+
+        self.assertEqual(
+            [record[&quot;name&quot;] for record in sorted_records],
+            [&quot;Bella&quot;, &quot;Bella&quot;, &quot;Charlie&quot;, &quot;Max&quot;, &quot;Zelda&quot;],
+        )
+        self.assertEqual([record[&quot;name&quot;] for record in self.records], original_order)
+
+    def test_merge_sort_reverse(self):
+        sorted_records = self.shelter.merge_sort(self.records, &quot;name&quot;, reverse=True)
+        self.assertEqual(
+            [record[&quot;name&quot;] for record in sorted_records],
+            [&quot;Zelda&quot;, &quot;Max&quot;, &quot;Charlie&quot;, &quot;Bella&quot;, &quot;Bella&quot;],
+        )
+
+    def test_binary_search_returns_all_duplicate_matches(self):
+        sorted_records = self.shelter.merge_sort(self.records, &quot;name&quot;)
+
+        matches = self.shelter.binary_search(sorted_records, &quot;name&quot;, &quot;Bella&quot;)
+
+        self.assertEqual(len(matches), 2)
+        self.assertTrue(all(record[&quot;name&quot;] == &quot;Bella&quot; for record in matches))
+
+    def test_binary_search_returns_empty_list_when_not_found(self):
+        sorted_records = self.shelter.merge_sort(self.records, &quot;name&quot;)
+        self.assertEqual(
+            self.shelter.binary_search(sorted_records, &quot;name&quot;, &quot;Not Present&quot;),
+            [],
+        )
+
+    def test_build_lookup_index_groups_records_by_key(self):
+        index = self.shelter.build_lookup_index(self.records, &quot;animal_type&quot;)
+
+        self.assertEqual(len(index[&quot;Dog&quot;]), 3)
+        self.assertEqual(len(index[&quot;Cat&quot;]), 2)
+
+    def test_frequency_count_summarizes_categories(self):
+        counts = self.shelter.frequency_count(self.records, &quot;animal_type&quot;)
+        self.assertEqual(counts, {&quot;Dog&quot;: 3, &quot;Cat&quot;: 2})
+
+    def test_read_sorted_uses_custom_algorithm_and_applies_limit_after_sort(self):
+        cursor = MagicMock()
+        cursor.__iter__.return_value = iter(self.records)
+        self.collection.find.return_value = cursor
+
+        rows = self.shelter.read_sorted({}, &quot;name&quot;, limit=3)
+
+        self.assertEqual(
+            [record[&quot;name&quot;] for record in rows],
+            [&quot;Bella&quot;, &quot;Bella&quot;, &quot;Charlie&quot;],
+        )
+        cursor.limit.assert_not_called()
+
+    def test_algorithms_validate_input(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.merge_sort(&quot;not a list&quot;, &quot;name&quot;)
+        with self.assertRaises(DataValidationError):
+            self.shelter.merge_sort(self.records, &quot;&quot;)
+        with self.assertRaises(DataValidationError):
+            self.shelter.binary_search(self.records, &quot;name&quot;, None)
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Michael Langille • CS 499 Computer Science Capstone
+    </div>
+  </footer>
+</body>
+</html>

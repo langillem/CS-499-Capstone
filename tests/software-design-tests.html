@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Software Design Unit Tests - Michael Langille CS 499 ePortfolio">
+  <title>Software Design Unit Tests | Michael Langille</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="../index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+          <a href="../self-assessment.html">Self-Assessment</a>
+          <a href="../code-review.html">Code Review</a>
+          <a href="../software-design.html">Software Design</a>
+          <a href="../algorithms.html">Algorithms</a>
+          <a href="../databases.html">Databases</a>
+        </div>
+      </nav>
+
+      <p class="kicker">Enhancement One • Test Code</p>
+      <h1>Software Design Unit Tests</h1>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="container">
+      <p>These unit tests validate the Software Design and Engineering enhancement, including input validation, update behavior, read limits, and dependency-injected client handling.</p>
+
+      <div class="enhancement-grid">
+        <div class="mini-card">
+          <strong>Test Framework</strong><br>
+          Python unittest
+        </div>
+        <div class="mini-card">
+          <strong>Test Count</strong><br>
+          5 unit tests
+        </div>
+        <div class="mini-card">
+          <strong>Database Dependency</strong><br>
+          Mocked with MagicMock
+        </div>
+        <div class="mini-card">
+          <strong>Purpose</strong><br>
+          Verify enhancement behavior without requiring a live MongoDB server
+        </div>
+      </div>
+
+      <div class="artifact-actions">
+        <a class="artifact-button secondary-action" href="../software-design.html">
+          ← Back to Software Design
+        </a>
+      </div>
+
+      <h2>Complete Test Source</h2>
+      <p class="code-note">
+        This page displays the complete Python unit-test source directly in the browser.
+      </p>
+
+      <pre class="portfolio-code"><code>&quot;&quot;&quot;Unit tests for the CS 499 Software Design and Engineering enhancement.&quot;&quot;&quot;
+
+import unittest
+from unittest.mock import MagicMock
+
+from Enhanced_AnimalShelter import AnimalShelter, DataValidationError, MongoConfig
+
+
+class AnimalShelterSoftwareDesignTests(unittest.TestCase):
+    def setUp(self):
+        self.client = MagicMock()
+        self.database = MagicMock()
+        self.collection = MagicMock()
+        self.client.__getitem__.return_value = self.database
+        self.database.__getitem__.return_value = self.collection
+
+        self.shelter = AnimalShelter(
+            config=MongoConfig(username=&quot;test&quot;, password=&quot;secret&quot;),
+            client=self.client,
+            verify_connection=False,
+        )
+
+    def test_create_rejects_empty_document(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.create({})
+
+    def test_delete_rejects_empty_query(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.delete({})
+
+    def test_update_wraps_plain_fields_in_set_operator(self):
+        result = MagicMock(modified_count=1)
+        self.collection.update_one.return_value = result
+
+        modified = self.shelter.update(
+            {&quot;name&quot;: &quot;Frank&quot;},
+            {&quot;age_upon_outcome&quot;: &quot;7 years&quot;},
+        )
+
+        self.assertEqual(modified, 1)
+        self.collection.update_one.assert_called_once_with(
+            {&quot;name&quot;: &quot;Frank&quot;},
+            {&quot;$set&quot;: {&quot;age_upon_outcome&quot;: &quot;7 years&quot;}},
+        )
+
+    def test_read_retains_original_limit_behavior(self):
+        cursor = MagicMock()
+        cursor.limit.return_value = cursor
+        cursor.__iter__.return_value = iter([{&quot;name&quot;: &quot;Frank&quot;}])
+        self.collection.find.return_value = cursor
+
+        rows = self.shelter.read({&quot;animal_type&quot;: &quot;Dog&quot;}, limit=5)
+
+        self.assertEqual(rows, [{&quot;name&quot;: &quot;Frank&quot;}])
+        cursor.limit.assert_called_once_with(5)
+
+    def test_injected_client_is_not_closed_by_shelter(self):
+        self.shelter.close()
+        self.client.close.assert_not_called()
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()</code></pre>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Michael Langille • CS 499 Computer Science Capstone
+    </div>
+  </footer>
+</body>
+</html>

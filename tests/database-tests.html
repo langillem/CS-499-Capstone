@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Database Unit Tests - Michael Langille CS 499 ePortfolio">
+  <title>Database Unit Tests | Michael Langille</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="../index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+          <a href="../self-assessment.html">Self-Assessment</a>
+          <a href="../code-review.html">Code Review</a>
+          <a href="../software-design.html">Software Design</a>
+          <a href="../algorithms.html">Algorithms</a>
+          <a href="../databases.html">Databases</a>
+        </div>
+      </nav>
+
+      <p class="kicker">Enhancement Three • Test Code</p>
+      <h1>Database Unit Tests</h1>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="container">
+
+      <p>
+        These unit tests validate the Database enhancement of the
+        <code>AnimalShelter</code> artifact. The suite checks secure configuration,
+        query validation, CRUD compatibility, server-side sorting and pagination,
+        document counting, index creation, aggregation, and query-plan inspection.
+      </p>
+
+      <div class="enhancement-grid">
+        <div class="mini-card">
+          <strong>Test Framework</strong><br>
+          Python unittest
+        </div>
+
+        <div class="mini-card">
+          <strong>Test Count</strong><br>
+          11 unit tests
+        </div>
+
+        <div class="mini-card">
+          <strong>Database Dependency</strong><br>
+          Mocked with MagicMock
+        </div>
+
+        <div class="mini-card">
+          <strong>Security Coverage</strong><br>
+          Credential escaping, environment configuration, query validation, and protected mass writes
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>What the tests verify:</strong> credential escaping, environment-based
+        configuration, server-side sort/skip/limit behavior, blocking unsafe JavaScript-related
+        query operators, rejecting unsupported update operators, requiring nonempty mass-write
+        filters, document counting, index creation, aggregation pipelines, query-plan inspection,
+        and preservation of CRUD behavior.
+      </div>
+
+      <div class="artifact-actions">
+        <a class="artifact-button secondary-action" href="../databases.html">
+          ← Back to Databases
+        </a>
+      </div>
+
+      <h2>Complete Test Source</h2>
+      <p class="code-note">
+        This page displays the complete Python unit-test source directly in the browser.
+      </p>
+
+      <pre class="portfolio-code"><code>&quot;&quot;&quot;Unit tests for CS 499 Milestone Four: Database Enhancement.&quot;&quot;&quot;
+
+import os
+import unittest
+from unittest.mock import MagicMock, patch
+
+from Enhanced_AnimalShelter_Database import (
+    ASCENDING,
+    DESCENDING,
+    AnimalShelter,
+    DataValidationError,
+    MongoConfig,
+)
+
+
+class AnimalShelterDatabaseTests(unittest.TestCase):
+    def setUp(self):
+        self.client = MagicMock()
+        self.database = MagicMock()
+        self.collection = MagicMock()
+        self.client.__getitem__.return_value = self.database
+        self.database.__getitem__.return_value = self.collection
+
+        self.shelter = AnimalShelter(
+            config=MongoConfig(),
+            client=self.client,
+            verify_connection=False,
+        )
+
+    def test_build_uri_escapes_credentials(self):
+        config = MongoConfig(username=&quot;user@example.com&quot;, password=&quot;p:a/ss&quot;)
+        uri = config.build_uri()
+        self.assertIn(&quot;user%40example.com&quot;, uri)
+        self.assertIn(&quot;p%3Aa%2Fss&quot;, uri)
+        self.assertNotIn(&quot;p:a/ss&quot;, uri)
+
+    def test_from_environment_loads_configuration_without_hardcoding(self):
+        values = {
+            &quot;MONGODB_USERNAME&quot;: &quot;aacuser&quot;,
+            &quot;MONGODB_PASSWORD&quot;: &quot;secret&quot;,
+            &quot;MONGODB_HOST&quot;: &quot;db.internal&quot;,
+            &quot;MONGODB_PORT&quot;: &quot;27018&quot;,
+            &quot;MONGODB_DB&quot;: &quot;aac&quot;,
+            &quot;MONGODB_COLLECTION&quot;: &quot;animals&quot;,
+            &quot;MONGODB_TLS&quot;: &quot;true&quot;,
+        }
+        with patch.dict(os.environ, values, clear=False):
+            config = MongoConfig.from_environment()
+
+        self.assertEqual(config.username, &quot;aacuser&quot;)
+        self.assertEqual(config.host, &quot;db.internal&quot;)
+        self.assertEqual(config.port, 27018)
+        self.assertTrue(config.tls)
+
+    def test_read_applies_server_side_sort_skip_and_limit(self):
+        cursor = MagicMock()
+        cursor.sort.return_value = cursor
+        cursor.skip.return_value = cursor
+        cursor.limit.return_value = cursor
+        cursor.__iter__.return_value = iter([{&quot;name&quot;: &quot;Bella&quot;}])
+        self.collection.find.return_value = cursor
+
+        rows = self.shelter.read(
+            {&quot;animal_type&quot;: &quot;Dog&quot;},
+            sort=[(&quot;breed&quot;, ASCENDING)],
+            skip=5,
+            limit=10,
+        )
+
+        self.assertEqual(rows, [{&quot;name&quot;: &quot;Bella&quot;}])
+        self.collection.find.assert_called_once_with({&quot;animal_type&quot;: &quot;Dog&quot;}, None)
+        cursor.sort.assert_called_once_with([(&quot;breed&quot;, ASCENDING)])
+        cursor.skip.assert_called_once_with(5)
+        cursor.limit.assert_called_once_with(10)
+
+    def test_query_validation_blocks_server_side_javascript(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.read({&quot;$where&quot;: &quot;this.age &gt; 4&quot;})
+
+        with self.assertRaises(DataValidationError):
+            self.shelter.read({&quot;$expr&quot;: {&quot;$function&quot;: {&quot;body&quot;: &quot;return true&quot;}}})
+
+    def test_update_rejects_unsupported_operator(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.update({&quot;name&quot;: &quot;Bella&quot;}, {&quot;$replaceWith&quot;: {&quot;name&quot;: &quot;X&quot;}})
+
+    def test_empty_mass_write_filters_are_rejected(self):
+        with self.assertRaises(DataValidationError):
+            self.shelter.update({}, {&quot;status&quot;: &quot;reviewed&quot;}, many=True)
+        with self.assertRaises(DataValidationError):
+            self.shelter.delete({}, many=True)
+
+    def test_count_uses_count_documents(self):
+        self.collection.count_documents.return_value = 42
+        count = self.shelter.count({&quot;animal_type&quot;: &quot;Dog&quot;})
+        self.assertEqual(count, 42)
+        self.collection.count_documents.assert_called_once_with({&quot;animal_type&quot;: &quot;Dog&quot;})
+
+    def test_ensure_indexes_creates_expected_index_models(self):
+        self.collection.create_indexes.return_value = [
+            &quot;idx_breed&quot;,
+            &quot;idx_animal_type&quot;,
+            &quot;idx_animal_type_breed&quot;,
+            &quot;idx_outcome_type&quot;,
+        ]
+
+        names = self.shelter.ensure_indexes()
+
+        self.assertEqual(len(names), 4)
+        self.collection.create_indexes.assert_called_once()
+        models = self.collection.create_indexes.call_args.args[0]
+        self.assertEqual(len(models), 4)
+
+    def test_aggregate_by_builds_server_side_pipeline(self):
+        self.collection.aggregate.return_value = iter(
+            [{&quot;_id&quot;: &quot;Dog&quot;, &quot;count&quot;: 30}, {&quot;_id&quot;: &quot;Cat&quot;, &quot;count&quot;: 20}]
+        )
+
+        result = self.shelter.aggregate_by(
+            &quot;animal_type&quot;, match={&quot;outcome_type&quot;: &quot;Adoption&quot;}, limit=5
+        )
+
+        self.assertEqual(result[0][&quot;_id&quot;], &quot;Dog&quot;)
+        pipeline = self.collection.aggregate.call_args.args[0]
+        self.assertEqual(pipeline[0], {&quot;$match&quot;: {&quot;outcome_type&quot;: &quot;Adoption&quot;}})
+        self.assertEqual(
+            pipeline[1],
+            {&quot;$group&quot;: {&quot;_id&quot;: &quot;$animal_type&quot;, &quot;count&quot;: {&quot;$sum&quot;: 1}}},
+        )
+        self.assertEqual(pipeline[-1], {&quot;$limit&quot;: 5})
+        self.collection.aggregate.assert_called_once_with(pipeline, allowDiskUse=True)
+
+    def test_explain_query_returns_plan_and_applies_sort(self):
+        cursor = MagicMock()
+        cursor.sort.return_value = cursor
+        cursor.explain.return_value = {&quot;queryPlanner&quot;: {&quot;winningPlan&quot;: {&quot;stage&quot;: &quot;IXSCAN&quot;}}}
+        self.collection.find.return_value = cursor
+
+        plan = self.shelter.explain_query(
+            {&quot;breed&quot;: &quot;Labrador Retriever Mix&quot;},
+            sort=[(&quot;breed&quot;, DESCENDING)],
+        )
+
+        self.assertEqual(plan[&quot;queryPlanner&quot;][&quot;winningPlan&quot;][&quot;stage&quot;], &quot;IXSCAN&quot;)
+        cursor.sort.assert_called_once_with([(&quot;breed&quot;, DESCENDING)])
+
+    def test_create_preserves_crud_behavior(self):
+        self.collection.insert_one.return_value.acknowledged = True
+        self.assertTrue(self.shelter.create({&quot;name&quot;: &quot;Frank&quot;, &quot;animal_type&quot;: &quot;Dog&quot;}))
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()
+</code></pre>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Michael Langille • CS 499 Computer Science Capstone
+    </div>
+  </footer>
+</body>
+</html>
