@@ -221,6 +221,7 @@ This portfolio demonstrates experience with:
 
 ## Repository Structure
 
+```text
 CS-499-ePortfolio/
 │
 ├── index.html
@@ -256,3 +257,4 @@ CS-499-ePortfolio/
     ├── software-design-tests.html
     ├── algorithms-tests.html
     └── database-tests.html
+```
