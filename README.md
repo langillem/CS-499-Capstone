@@ -221,7 +221,6 @@ This portfolio demonstrates experience with:
 
 ## Repository Structure
 
-```text
 CS-499-ePortfolio/
 │
 ├── index.html
@@ -248,7 +247,12 @@ CS-499-ePortfolio/
 │       ├── original-animal-shelter.html
 │       └── enhanced-animal-shelter.html
 │
-└── narratives/
-    ├── software-design-narrative.html
-    ├── algorithms-narrative.html
-    └── database-narrative.html
+├── narratives/
+│   ├── software-design-narrative.html
+│   ├── algorithms-narrative.html
+│   └── database-narrative.html
+│
+└── tests/
+    ├── software-design-tests.html
+    ├── algorithms-tests.html
+    └── database-tests.html
