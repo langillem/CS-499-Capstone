@@ -114,4 +114,7 @@ h1{margin:0;font-size:clamp(3rem,8vw,6rem);line-height:1}h2{font-size:clamp(2rem
   .enhancement-grid {
     grid-template-columns: 1fr;
   }
+  p.indent {
+    text-indent: 30px;
+ }
 }
