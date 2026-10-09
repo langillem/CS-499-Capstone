@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Original AnimalShelter Test Code - Michael Langille CS 499 ePortfolio">
+  <title>Original AnimalShelter Test Code | Michael Langille</title>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+</head>
+
+<body>
+  <header class="pagehead page-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="../index.html">Michael Langille | CS 499</a>
+        <div class="navlinks">
+          <a href="../self-assessment.html">Self-Assessment</a>
+          <a href="../code-review.html">Code Review</a>
+          <a href="../software-design.html">Software Design</a>
+          <a href="../algorithms.html">Algorithms</a>
+          <a href="../databases.html">Databases</a>
+        </div>
+      </nav>
+
+      <p class="kicker">Original CS 340 Artifact • Test Code</p>
+      <h1>Original AnimalShelter Test Code</h1>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="container">
+
+      <p>
+        This browser-friendly page presents a small unit-test harness for the
+        original <code>Original_AnimalShelter.py</code> artifact. The tests exercise
+        the original create, read, update, and delete behavior while using mocks so
+        a live MongoDB server is not required.
+      </p>
+
+      <div class="enhancement-grid">
+        <div class="mini-card">
+          <strong>Test Framework</strong><br>
+          Python unittest
+        </div>
+
+        <div class="mini-card">
+          <strong>Test Count</strong><br>
+          6 unit tests
+        </div>
+
+        <div class="mini-card">
+          <strong>Database Dependency</strong><br>
+          MongoClient patched with MagicMock
+        </div>
+
+        <div class="mini-card">
+          <strong>Coverage</strong><br>
+          Original CRUD behavior and basic input validation
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Portfolio note:</strong> This test harness was created to document
+        and validate the behavior of the original artifact for comparison with the
+        later CS 499 enhancements. It should not be represented as part of the
+        original CS 340 submission unless it was actually submitted with that project.
+      </div>
+
+      <div class="artifact-actions">
+        <a class="artifact-button secondary-action"
+           href="../artifacts/source/original-animal-shelter.html">
+          ← View Original Source Code
+        </a>
+
+        <a class="artifact-button primary-action"
+           href="../software-design.html">
+          View Software Design Enhancement
+        </a>
+      </div>
+
+      <h2>Complete Test Source</h2>
+      <p class="code-note">
+        The test code below is displayed directly in the browser for portfolio review.
+      </p>
+
+      <pre class="portfolio-code"><code>&quot;&quot;&quot;Portfolio unit tests for the original CS 340 AnimalShelter artifact.
+
+These tests use mocks so the original CRUD behavior can be reviewed without
+requiring a live MongoDB server.
+&quot;&quot;&quot;
+
+import unittest
+from unittest.mock import MagicMock, patch
+
+from Original_AnimalShelter import AnimalShelter
+
+
+class OriginalAnimalShelterTests(unittest.TestCase):
+    def setUp(self):
+        # Patch MongoClient because the original constructor creates the client
+        # internally instead of accepting an injected dependency.
+        self.mongo_patcher = patch(&quot;Original_AnimalShelter.MongoClient&quot;)
+        self.mock_mongo_client = self.mongo_patcher.start()
+        self.addCleanup(self.mongo_patcher.stop)
+
+        self.client = MagicMock()
+        self.database = MagicMock()
+        self.collection = MagicMock()
+
+        self.mock_mongo_client.return_value = self.client
+        self.client.__getitem__.return_value = self.database
+        self.database.__getitem__.return_value = self.collection
+
+        self.shelter = AnimalShelter(
+            username=&quot;testuser&quot;,
+            password=&quot;testpassword&quot;,
+            db_name=&quot;aac&quot;,
+            collection_name=&quot;animals&quot;,
+        )
+
+    def test_create_valid_document_returns_true(self):
+        self.collection.insert_one.return_value.acknowledged = True
+
+        result = self.shelter.create(
+            {&quot;name&quot;: &quot;Frank&quot;, &quot;animal_type&quot;: &quot;Dog&quot;}
+        )
+
+        self.assertTrue(result)
+        self.collection.insert_one.assert_called_once_with(
+            {&quot;name&quot;: &quot;Frank&quot;, &quot;animal_type&quot;: &quot;Dog&quot;}
+        )
+
+    def test_create_rejects_empty_document(self):
+        self.assertFalse(self.shelter.create({}))
+        self.collection.insert_one.assert_not_called()
+
+    def test_read_returns_records_and_applies_limit(self):
+        cursor = MagicMock()
+        cursor.limit.return_value = cursor
+        cursor.__iter__.return_value = iter(
+            [{&quot;name&quot;: &quot;Bella&quot;}, {&quot;name&quot;: &quot;Charlie&quot;}]
+        )
+        self.collection.find.return_value = cursor
+
+        rows = self.shelter.read(
+            {&quot;animal_type&quot;: &quot;Dog&quot;},
+            limit=2,
+        )
+
+        self.assertEqual(
+            rows,
+            [{&quot;name&quot;: &quot;Bella&quot;}, {&quot;name&quot;: &quot;Charlie&quot;}],
+        )
+        cursor.limit.assert_called_once_with(2)
+
+    def test_update_wraps_plain_values_in_set_operator(self):
+        self.collection.update_one.return_value.modified_count = 1
+
+        modified = self.shelter.update(
+            {&quot;name&quot;: &quot;Frank&quot;},
+            {&quot;age_upon_outcome&quot;: &quot;7 years&quot;},
+        )
+
+        self.assertEqual(modified, 1)
+        self.collection.update_one.assert_called_once_with(
+            {&quot;name&quot;: &quot;Frank&quot;},
+            {&quot;$set&quot;: {&quot;age_upon_outcome&quot;: &quot;7 years&quot;}},
+        )
+
+    def test_delete_rejects_empty_query(self):
+        deleted = self.shelter.delete({})
+
+        self.assertEqual(deleted, 0)
+        self.collection.delete_one.assert_not_called()
+        self.collection.delete_many.assert_not_called()
+
+    def test_delete_returns_deleted_count(self):
+        self.collection.delete_one.return_value.deleted_count = 1
+
+        deleted = self.shelter.delete({&quot;name&quot;: &quot;Frank&quot;})
+
+        self.assertEqual(deleted, 1)
+        self.collection.delete_one.assert_called_once_with(
+            {&quot;name&quot;: &quot;Frank&quot;}
+        )
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()
+</code></pre>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Michael Langille • CS 499 Computer Science Capstone
+    </div>
+  </footer>
+</body>
+</html>
